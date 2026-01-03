@@ -1,84 +1,63 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useSearchParams } from 'react-router-dom';
+import {
+    PageContainer,
+    Card,
+    Input,
+    SecondaryButton,
+    SectionTitle
+} from '../components/SharedStyles';
 
-const Container = styled.div`
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background: #fff;
-    border-radius: 20px;
-    border: 1px solid #000;
+const SearchHeader = styled.div`
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    padding: 4rem 2rem;
+    border-radius: 30px;
+    margin-bottom: -40px;
+    color: white;
+    text-align: center;
 `;
 
-const Header = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    border-bottom: 2px solid #000;
-    padding-bottom: 1rem;
+const SearchContent = styled(Card)`
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    position: relative;
+    z-index: 10;
 `;
 
-const Title = styled.h2`
-    font-size: 1.5rem;
+const ResultsGrid = styled.div`
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
 `;
 
-const SearchBarContainer = styled.div`
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-`;
-
-const SearchInput = styled.input`
-    flex: 1;
-    padding: 0.8rem;
-    border: 1px solid #000;
-    border-radius: 8px;
-    font-size: 1rem;
-`;
-
-const FilterButton = styled.button`
-    padding: 0.8rem 1.5rem;
-    background: #fff;
-    border: 1px solid #000;
-    border-radius: 8px;
+const ResultCard = styled(Card)`
+    padding: 0;
+    overflow: hidden;
     cursor: pointer;
-    &:hover { background: #f9f9f9; }
-`;
-
-const ResultsList = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-`;
-
-const ResultCard = styled.div`
-    padding: 1.5rem;
-    border: 1px solid #000;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    color: #333;
-    background: #fff;
-    cursor: pointer;
-    transition: 0.2s;
 
     &:hover {
-        background: #f0f0f0;
+        transform: scale(1.02);
     }
 `;
 
-// Mock Data for demonstration
+const ResultImage = styled.div`
+    height: 150px;
+    background: #ddd url(${props => props.src || 'https://via.placeholder.com/300'}) center/cover;
+`;
+
+const ResultInfo = styled.div`
+    padding: 1.5rem;
+`;
+
 const MOCK_RESULTS = [
-    { id: 1, name: 'Paragliding in Interlaken', details: 'Duration: 2h | Cost: $180' },
-    { id: 2, name: 'City Walking Tour', details: 'Duration: 3h | Cost: $20' },
-    { id: 3, name: 'Mountain Hiking', details: 'Duration: 5h | Cost: Free' },
-    { id: 4, name: 'Lake Boat Trip', details: 'Duration: 1.5h | Cost: $45' },
-    { id: 5, name: 'Museum Visit', details: 'Duration: 2h | Cost: $15' },
+    { id: 1, name: 'Paragliding in Interlaken', details: 'Experience the Swiss Alps from above', cost: '$180', img: 'https://images.unsplash.com/photo-1533387520461-125032824147?auto=format&fit=crop&w=500&q=60' },
+    { id: 2, name: 'Tokyo Street Food Tour', details: 'Taste authentic ramen and sushi', cost: '$45', img: 'https://images.unsplash.com/photo-1504462175914-42f654f15d97?auto=format&fit=crop&w=500&q=60' },
+    { id: 3, name: 'Parisian Art Walk', details: 'Guided tour of Montmartre', cost: '$25', img: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=500&q=60' },
+    { id: 4, name: 'Bali Temple Trek', details: 'Discover hidden spiritual sites', cost: '$60', img: 'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=500&q=60' },
+    { id: 5, name: 'New York Jazz Night', details: 'Best clubs in Greenwich Village', cost: '$30', img: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?auto=format&fit=crop&w=500&q=60' },
 ];
 
 const SearchPage = () => {
@@ -86,34 +65,64 @@ const SearchPage = () => {
     const query = searchParams.get('q') || '';
     const [searchTerm, setSearchTerm] = useState(query);
 
+    const filteredResults = MOCK_RESULTS.filter(r =>
+        r.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
-        <Container>
-            <Header>
-                <Title>GlobalTrotter</Title>
-                <div style={{ width: '30px', height: '30px', borderRadius: '50%', border: '1px solid #000' }}></div>
-            </Header>
+        <PageContainer>
+            <SearchHeader>
+                <h1 style={{ fontSize: '2.5rem', fontWeight: '900', marginBottom: '1rem' }}>Explore the World</h1>
+                <p style={{ opacity: 0.8 }}>Discover activities, cities, and hidden gems</p>
+            </SearchHeader>
 
-            <SearchBarContainer>
-                <SearchInput
-                    placeholder="Paragliding..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <FilterButton>Group by</FilterButton>
-                <FilterButton>Filter</FilterButton>
-                <FilterButton>Sort by...</FilterButton>
-            </SearchBarContainer>
+            <SearchContent>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div style={{ flex: 1 }}>
+                        <Input
+                            placeholder="Search by activity, city or country..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <SecondaryButton>Search</SecondaryButton>
+                </div>
 
-            <h3>Results</h3>
-            <ResultsList>
-                {MOCK_RESULTS.map(result => (
-                    <ResultCard key={result.id}>
-                        {result.name} - {result.details}
-                    </ResultCard>
-                ))}
-            </ResultsList>
-        </Container>
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+                    <SecondaryButton style={{ padding: '0.5rem 1.2rem', fontSize: '0.9rem' }}>Adventure</SecondaryButton>
+                    <SecondaryButton style={{ padding: '0.5rem 1.2rem', fontSize: '0.9rem' }}>Culture</SecondaryButton>
+                    <SecondaryButton style={{ padding: '0.5rem 1.2rem', fontSize: '0.9rem' }}>Relaxation</SecondaryButton>
+                    <SecondaryButton style={{ padding: '0.5rem 1.2rem', fontSize: '0.9rem' }}>Food & Drink</SecondaryButton>
+                </div>
+            </SearchContent>
+
+            <SectionTitle style={{ marginTop: '5rem' }}>Search Results</SectionTitle>
+
+            {filteredResults.length > 0 ? (
+                <ResultsGrid>
+                    {filteredResults.map(result => (
+                        <ResultCard key={result.id}>
+                            <ResultImage src={result.img} />
+                            <ResultInfo>
+                                <h4 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>{result.name}</h4>
+                                <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '1rem' }}>{result.details}</p>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ fontWeight: '800', color: 'var(--secondary)' }}>{result.cost}</span>
+                                    <SecondaryButton style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}>Add to Trip</SecondaryButton>
+                                </div>
+                            </ResultInfo>
+                        </ResultCard>
+                    ))}
+                </ResultsGrid>
+            ) : (
+                <div style={{ textAlign: 'center', padding: '5rem 0' }}>
+                    <h3 style={{ color: '#888' }}>No results found for "{searchTerm}"</h3>
+                    <p style={{ color: '#aaa' }}>Try searching for "Paris", "Tokyo", or "Adventure"</p>
+                </div>
+            )}
+        </PageContainer>
     );
 };
 
 export default SearchPage;
+

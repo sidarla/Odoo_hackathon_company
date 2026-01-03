@@ -1,147 +1,117 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import {
+    PageContainer,
+    Card,
+    SectionTitle,
+    SecondaryButton
+} from '../components/SharedStyles';
 
-const Container = styled.div`
-    max-width: 900px;
-    margin: 2rem auto;
+const CalendarWrapper = styled(Card)`
     padding: 2rem;
-    background: #fff;
-    border-radius: 20px;
-    border: 1px solid #000;
-`;
-
-const Header = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    border-bottom: 2px solid #000;
-    padding-bottom: 1rem;
-`;
-
-const Title = styled.h2`
-    font-size: 1.5rem;
-`;
-
-const SearchBarContainer = styled.div`
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-`;
-
-const SearchInput = styled.input`
-    flex: 1;
-    padding: 0.8rem;
-    border: 1px solid #000;
-    border-radius: 8px;
-    font-size: 1rem;
-`;
-
-const FilterButton = styled.button`
-    padding: 0.8rem 1.5rem;
-    background: #fff;
-    border: 1px solid #000;
-    border-radius: 8px;
-    cursor: pointer;
-    &:hover { background: #f9f9f9; }
+    margin-top: 2rem;
 `;
 
 const CalendarControls = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    padding: 0 2rem;
+    margin-bottom: 2.5rem;
 `;
 
 const MonthTitle = styled.h3`
-    font-size: 1.8rem;
-    font-weight: bold;
-`;
-
-const ArrowButton = styled.button`
-    background: none;
-    border: none;
     font-size: 2rem;
-    cursor: pointer;
+    font-weight: 800;
+    color: var(--dark);
 `;
 
 const CalendarGrid = styled.div`
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    border: 1px solid #ddd;
+    gap: 1px;
+    background: #eee;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    overflow: hidden;
 `;
 
 const DayHeader = styled.div`
-    padding: 1rem;
+    padding: 1.2rem;
     text-align: center;
-    font-weight: bold;
-    border-bottom: 1px solid #ddd;
+    font-weight: 800;
+    background: #f8f9fa;
+    color: var(--dark);
+    font-size: 0.8rem;
+    letter-spacing: 1px;
 `;
 
 const DayCell = styled.div`
-    min-height: 100px;
-    border: 1px solid #f0f0f0;
-    padding: 0.5rem;
-    position: relative;
-    background: ${props => props.isGrey ? '#ccc' : '#fff'};
+    min-height: 120px;
+    background: ${props => props.isGrey ? '#fafafa' : '#fff'};
+    padding: 0.8rem;
+    transition: all 0.2s;
+
+    &:hover {
+        background: #fdfdfd;
+        z-index: 1;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
+    }
 `;
 
 const DateNumber = styled.span`
-    font-weight: bold;
+    font-weight: 700;
+    color: ${props => props.isGrey ? '#ccc' : 'var(--dark)'};
+    font-size: 1.1rem;
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
 `;
 
 const EventTag = styled.div`
-    background: #eee;
-    padding: 0.2rem 0.5rem;
-    font-size: 0.8rem;
-    margin-bottom: 0.2rem;
+    background: ${props => props.color || 'var(--secondary)'};
+    color: white;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 6px;
+    margin-bottom: 0.4rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    border: 1px solid #999;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 `;
 
 const CalendarView = () => {
-    // Hardcoded for 'January 2024' as per mockup
-    const [currentMonth, setCurrentMonth] = useState(new Date(2024, 0, 1));
-
-    const days = ['SUM', 'MON', 'MON', 'THI', 'WIL', 'THI', 'SHT', 'SUN']; // Mimicking the slightly odd labels in mockup or typical days
-    // Correcting to standard days for functionality, but matching visual style
     const standardDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
-    // Mock Trips
     const events = [
-        { date: 4, name: 'PARIS TRIP' },
-        { date: 5, name: 'PARIS TRIP' },
-        { date: 9, name: 'SARIS 10' }, // Mockup typo mimic? Or 'PARIS 10'
-        { date: 14, name: 'NYC - GETAWAY' },
-        { date: 15, name: 'NYC - GETAWAY' },
-        { date: 16, name: 'JAPAN ADVENTURE' },
-        { date: 17, name: 'JAPAN ADVENTURE' },
-        { date: 24, name: 'NYC GETAWAY' }, // Using mockup placement
+        { date: 4, name: 'PARIS TRIP', color: '#FF6B6B' },
+        { date: 5, name: 'PARIS TRIP', color: '#FF6B6B' },
+        { date: 9, name: 'FLIGHT 10:00', color: '#4ECDC4' },
+        { date: 14, name: 'NYC GETAWAY', color: '#FFE66D', textColor: '#000' },
+        { date: 15, name: 'NYC GETAWAY', color: '#FFE66D', textColor: '#000' },
+        { date: 16, name: 'MT. FUJI HIKE', color: '#4ECDC4' },
+        { date: 17, name: 'MT. FUJI HIKE', color: '#4ECDC4' },
+        { date: 24, name: 'CITY TOUR', color: '#292F36' },
     ];
 
-    // Helper to generate days logic (simplified for static demo)
     const renderCalendarDays = () => {
         const grid = [];
-        // Empty cells for offset
         for (let i = 0; i < 6; i++) {
-            grid.push(<DayCell key={`empty-${i}`} />);
+            grid.push(<DayCell key={`empty-${i}`} isGrey={true} />);
         }
 
-        // Days 1-31
         for (let i = 1; i <= 31; i++) {
-            const event = events.find(e => e.date === i);
-            const isGrey = [9, 15, 18, 20, 21, 23, 25, 27].includes(i); // Arbitrary grey cells from mockup
+            const dayEvents = events.filter(e => e.date === i);
+            const isToday = i === 3; // For demo purpose
 
             grid.push(
-                <DayCell key={i} isGrey={isGrey}>
+                <DayCell key={i} style={isToday ? { border: '2px solid var(--secondary)' } : {}}>
                     <DateNumber>{i}</DateNumber>
-                    {event && <EventTag>{event.name}</EventTag>}
+                    {dayEvents.map((event, idx) => (
+                        <EventTag key={idx} color={event.color} style={event.textColor ? { color: event.textColor } : {}}>
+                            {event.name}
+                        </EventTag>
+                    ))}
                 </DayCell>
             );
         }
@@ -149,31 +119,27 @@ const CalendarView = () => {
     };
 
     return (
-        <Container>
-            <Header>
-                <Title>GlobalTrotter</Title>
-                <div style={{ width: '30px', height: '30px', borderRadius: '50%', border: '1px solid #000' }}></div>
-            </Header>
+        <PageContainer>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
+                <SectionTitle>Travel Calendar</SectionTitle>
+                <SecondaryButton>+ Add Event</SecondaryButton>
+            </div>
 
-            <SearchBarContainer>
-                <SearchInput placeholder="Search bar ......" />
-                <FilterButton>Group by</FilterButton>
-                <FilterButton>Filter</FilterButton>
-                <FilterButton>Sort by...</FilterButton>
-            </SearchBarContainer>
+            <CalendarWrapper>
+                <CalendarControls>
+                    <SecondaryButton style={{ padding: '0.5rem 1rem' }}>← Previous</SecondaryButton>
+                    <MonthTitle>January 2024</MonthTitle>
+                    <SecondaryButton style={{ padding: '0.5rem 1rem' }}>Next →</SecondaryButton>
+                </CalendarControls>
 
-            <CalendarControls>
-                <ArrowButton>←</ArrowButton>
-                <MonthTitle>January 2024</MonthTitle>
-                <ArrowButton>→</ArrowButton>
-            </CalendarControls>
-
-            <CalendarGrid>
-                {standardDays.map(day => <DayHeader key={day}>{day}</DayHeader>)}
-                {renderCalendarDays()}
-            </CalendarGrid>
-        </Container>
+                <CalendarGrid>
+                    {standardDays.map(day => <DayHeader key={day}>{day}</DayHeader>)}
+                    {renderCalendarDays()}
+                </CalendarGrid>
+            </CalendarWrapper>
+        </PageContainer>
     );
 };
 
 export default CalendarView;
+

@@ -2,81 +2,78 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import {
+    PageContainer,
+    Card,
+    Input,
+    GradientButton,
+    SectionTitle
+} from '../components/SharedStyles';
 
-const Container = styled.div`
+const CreateCard = styled(Card)`
     max-width: 800px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    border: 1px solid #000;
+    margin: 0 auto;
 `;
 
-const Title = styled.h2`
-    margin-bottom: 2rem;
-    font-size: 1.8rem;
+const HeroBanner = styled.div`
+    height: 250px;
+    background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
+                url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1500&q=80') center/cover;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: -50px;
+    color: white;
+    text-align: center;
 `;
 
 const Form = styled.form`
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    padding-top: 2rem;
 `;
 
-const FormGroup = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    
-    label {
-        width: 120px;
-        font-weight: 500;
-        text-align: right;
+const Row = styled.div`
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+
+    @media (max-width: 600px) {
+        grid-template-columns: 1fr;
     }
 `;
 
-const Input = styled.input`
-    flex: 1;
-    padding: 0.8rem;
-    border: 1px solid #000;
-    border-radius: 8px;
-    font-size: 1rem;
+const Label = styled.label`
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--dark);
 `;
 
-const SectionTitle = styled.h3`
-    margin-top: 2rem;
-    margin-bottom: 1rem;
-    border-top: 1px solid #ddd;
-    padding-top: 1rem;
-`;
-
-const Grid = styled.div`
+const SuggestionGrid = styled.div`
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-top: 1rem;
 `;
 
-const GridItem = styled.div`
-    height: 150px;
-    border: 1px solid #000;
+const SuggestionCard = styled.div`
+    height: 120px;
+    background: #f8f9fa;
     border-radius: 12px;
-    background: #f9f9f9;
-`;
+    border: 2px dashed #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    transition: all 0.3s;
 
-const Button = styled.button`
-    padding: 1rem 2rem;
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    border-radius: 30px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    align-self: center;
-    
     &:hover {
-        background: #ff5252;
+        border-color: var(--secondary);
+        color: var(--secondary);
+        background: #f0f7f6;
     }
 `;
 
@@ -95,14 +92,13 @@ const CreateTrip = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Logic to calculate name or just use place
             const tripData = {
                 ...formData,
                 name: `Trip to ${formData.place}`,
-                description: 'Generated trip'
+                description: 'Exciting new journey!'
             };
-            await api.post('/trips', tripData);
-            navigate('/my-trips');
+            const res = await api.post('/trips', tripData);
+            navigate(`/itinerary/${res.data.id}/view`);
         } catch (err) {
             console.error(err);
             alert('Error creating trip');
@@ -110,36 +106,68 @@ const CreateTrip = () => {
     };
 
     return (
-        <Container>
-            <Title>Create a new trip</Title>
-            <Form onSubmit={handleSubmit}>
-                <FormGroup>
-                    <label>Select a Place:</label>
-                    <Input name="place" value={formData.place} onChange={handleChange} required />
-                </FormGroup>
-                <FormGroup>
-                    <label>Start Date:</label>
-                    <Input type="date" name="startDate" value={formData.startDate} onChange={handleChange} required />
-                </FormGroup>
-                <FormGroup>
-                    <label>End Date:</label>
-                    <Input type="date" name="endDate" value={formData.endDate} onChange={handleChange} required />
-                </FormGroup>
+        <PageContainer>
+            <HeroBanner>
+                <div>
+                    <h1 style={{ fontSize: '3rem', fontWeight: '900' }}>Plan Your Next Chapter</h1>
+                    <p style={{ fontSize: '1.2rem', opacity: 0.9 }}>Every journey starts with a single step</p>
+                </div>
+            </HeroBanner>
 
-                <SectionTitle>Suggestion for Places to Visit/Activites to preform</SectionTitle>
-                <Grid>
-                    <GridItem></GridItem>
-                    <GridItem></GridItem>
-                    <GridItem></GridItem>
-                    <GridItem></GridItem>
-                    <GridItem></GridItem>
-                    <GridItem></GridItem>
-                </Grid>
+            <CreateCard style={{ position: 'relative', background: 'white' }}>
+                <Form onSubmit={handleSubmit}>
+                    <div>
+                        <Label>Where are you headed?</Label>
+                        <Input
+                            name="place"
+                            placeholder="e.g. Paris, Tokyo, New York"
+                            value={formData.place}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
 
-                <Button type="submit">Create Trip</Button>
-            </Form>
-        </Container>
+                    <Row>
+                        <div>
+                            <Label>Departure Date</Label>
+                            <Input
+                                type="date"
+                                name="startDate"
+                                value={formData.startDate}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <Label>Return Date</Label>
+                            <Input
+                                type="date"
+                                name="endDate"
+                                value={formData.endDate}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                    </Row>
+
+                    <div style={{ marginTop: '2rem' }}>
+                        <SectionTitle style={{ fontSize: '1.5rem' }}>Popular Suggestions</SectionTitle>
+                        <SuggestionGrid>
+                            <SuggestionCard>Eiffel Tower</SuggestionCard>
+                            <SuggestionCard>Louvre Museum</SuggestionCard>
+                            <SuggestionCard>Mount Fuji</SuggestionCard>
+                            <SuggestionCard>Central Park</SuggestionCard>
+                        </SuggestionGrid>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
+                        <GradientButton type="submit">Create Itinerary</GradientButton>
+                    </div>
+                </Form>
+            </CreateCard>
+        </PageContainer>
     );
 };
 
 export default CreateTrip;
+

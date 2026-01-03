@@ -1,128 +1,192 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
-
-const Container = styled.div`
-    max-width: 1000px;
-    margin: 2rem auto;
-    padding: 1rem;
-`;
+import {
+    PageContainer,
+    Section,
+    SectionTitle,
+    Card,
+    Input,
+    SecondaryButton,
+    Badge
+} from '../components/SharedStyles';
 
 const Header = styled.div`
     display: flex;
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 4rem;
     flex-wrap: wrap;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+    align-items: center;
 `;
 
-const SearchInput = styled.input`
-    flex: 1;
-    padding: 0.8rem;
-    border: 1px solid #000;
-    border-radius: 8px;
+const TripGrid = styled.div`
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
 `;
 
-const FilterButton = styled.button`
-    padding: 0.8rem 1.5rem;
-    background: #fff;
-    border: 1px solid #000;
-    border-radius: 8px;
-    &:hover { background: #f9f9f9; }
-`;
-
-const Section = styled.div`
-    margin-bottom: 2rem;
-`;
-
-const SectionTitle = styled.h3`
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-`;
-
-const TripCard = styled.div`
-    background: #fff;
-    border: 1px solid #000;
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 1rem;
+const TripCard = styled(Card)`
+    padding: 0;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    min-height: 120px;
-    font-size: 1.5rem;
-    text-align: center;
-    transition: 0.3s;
-    cursor: pointer;
+    height: 100%;
+    transition: all 0.3s ease;
+    border: 1px solid #f0f0f0;
 
     &:hover {
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        transform: translateY(-2px);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     }
+`;
+
+const TripImage = styled.div`
+    height: 180px;
+    background: #f8f9fa url(${props => props.src || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=500&q=60'}) center/cover no-repeat;
+`;
+
+const TripInfo = styled.div`
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+`;
+
+const CardActions = styled.div`
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 1.5rem;
 `;
 
 const MyTrips = () => {
     const [trips, setTrips] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
-    useEffect(() => {
-        const fetchTrips = async () => {
-            try {
-                const res = await api.get('/trips');
-                setTrips(res.data);
-            } catch (err) {
-                console.error(err);
-            }
-        };
-        fetchTrips();
+    const fetchTrips = useCallback(async () => {
+        try {
+            const res = await api.get('/trips');
+            setTrips(res.data || []);
+        } catch (err) {
+            console.error('Error fetching trips:', err);
+            setTrips([]);
+        }
     }, []);
 
-    // Helper to filter trips logic can be expanded. 
-    // For now assuming backend returns all and we filter here or just list them.
-    // The mockup had "Ongoing", "Up-coming", "Completed" sections.
-    const ongoing = trips.filter(t => t.status === 'ongoing');
-    const upcoming = trips.filter(t => t.status === 'upcoming');
-    const completed = trips.filter(t => t.status === 'completed');
+    useEffect(() => {
+        fetchTrips();
+    }, [fetchTrips]);
 
-    // If no status logic yet, just putting all in Upcoming for demo unless we add status to CreateTrip
-    // Default in model is 'upcoming'
+    const handleMarkCompleted = async (e, tripId) => {
+        e.preventDefault(); // Prevent navigating to the link
+        e.stopPropagation();
+        try {
+            await api.put(`/trips/${tripId}`, { status: 'completed' });
+            fetchTrips();
+        } catch (err) {
+            console.error('Error marking trip as completed:', err);
+            alert('Failed to update trip status');
+        }
+    };
+
+    const filteredTrips = trips.filter(t =>
+        t.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const ongoing = filteredTrips.filter(t => t.status === 'ongoing');
+    const upcoming = filteredTrips.filter(t => t.status === 'upcoming');
+    const completed = filteredTrips.filter(t => t.status === 'completed');
+
+    const renderTripCard = (trip) => (
+        <Link to={`/itinerary/${trip.id}/view`} key={trip.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <TripCard>
+                <TripImage src={trip.coverPhoto} />
+                <TripInfo>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                        <h4 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--dark)' }}>{trip.name}</h4>
+                        <Badge type={trip.status}>{trip.status}</Badge>
+                    </div>
+                    <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                        📍 {trip.place || 'Multiple Cities'}
+                    </p>
+                    <div style={{ fontSize: '0.85rem', color: '#aaa', fontWeight: '600' }}>
+                        {trip.startDate ? new Date(trip.startDate).toLocaleDateString() : 'TBD'} - {trip.endDate ? new Date(trip.endDate).toLocaleDateString() : 'TBD'}
+                    </div>
+
+                    <CardActions>
+                        <SecondaryButton style={{ flex: 1, padding: '0.6rem' }}>View Plan</SecondaryButton>
+                        {trip.status !== 'completed' && (
+                            <SecondaryButton
+                                onClick={(e) => handleMarkCompleted(e, trip.id)}
+                                style={{
+                                    flex: 1,
+                                    padding: '0.6rem',
+                                    background: 'linear-gradient(135deg, #2dbba7 0%, #1a9c8a 100%)',
+                                    color: 'white',
+                                    border: 'none'
+                                }}
+                            >
+                                Mark Done
+                            </SecondaryButton>
+                        )}
+                    </CardActions>
+                </TripInfo>
+            </TripCard>
+        </Link>
+    );
 
     return (
-        <Container>
+        <PageContainer>
             <Header>
-                <SearchInput placeholder="Search bar ......" />
-                <FilterButton>Group by</FilterButton>
-                <FilterButton>Filter</FilterButton>
-                <FilterButton>Sort by...</FilterButton>
+                <div style={{ flex: 2, position: 'relative' }}>
+                    <Input
+                        placeholder="Search your adventures..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <SecondaryButton>Filter</SecondaryButton>
+                <SecondaryButton>Sort by</SecondaryButton>
             </Header>
 
-            <Section>
-                <SectionTitle>Ongoing</SectionTitle>
-                {ongoing.length > 0 ? ongoing.map(trip => (
-                    <Link to={`/itinerary/${trip.id}`} key={trip.id}>
-                        <TripCard>Short Over View of {trip.name}</TripCard>
-                    </Link>
-                )) : <p>No ongoing trips</p>}
-            </Section>
+            {ongoing.length > 0 && (
+                <Section>
+                    <SectionTitle>Ongoing Trips</SectionTitle>
+                    <TripGrid>{ongoing.map(renderTripCard)}</TripGrid>
+                </Section>
+            )}
 
             <Section>
-                <SectionTitle>Up-coming</SectionTitle>
-                {upcoming.length > 0 || (ongoing.length === 0 && completed.length === 0) ? (upcoming.length > 0 ? upcoming : trips).map(trip => (
-                    <Link to={`/itinerary/${trip.id}`} key={trip.id}>
-                        <TripCard>Short Over View of {trip.name}</TripCard>
-                    </Link>
-                )) : <p>No upcoming trips</p>}
+                <SectionTitle>Upcoming Adventures</SectionTitle>
+                {upcoming.length > 0 ? (
+                    <TripGrid>{upcoming.map(renderTripCard)}</TripGrid>
+                ) : (
+                    <Card style={{ textAlign: 'center', padding: '4rem' }}>
+                        <h3 style={{ marginBottom: '1rem' }}>No upcoming trips yet</h3>
+                        <p style={{ color: '#666', marginBottom: '2rem' }}>Ready to explore the world? Start planning your next journey!</p>
+                        <Link to="/create-trip">
+                            <SecondaryButton>+ Start Planning</SecondaryButton>
+                        </Link>
+                    </Card>
+                )}
             </Section>
 
-            <Section>
-                <SectionTitle>Completed</SectionTitle>
-                {completed.length > 0 ? completed.map(trip => (
-                    <Link to={`/itinerary/${trip.id}`} key={trip.id}>
-                        <TripCard>Short Over View of {trip.name}</TripCard>
-                    </Link>
-                )) : <p>No completed trips</p>}
-            </Section>
-        </Container>
+            {completed.length > 0 && (
+                <Section style={{ opacity: 0.85 }}>
+                    <SectionTitle>Past Memories</SectionTitle>
+                    <TripGrid>{completed.map(renderTripCard)}</TripGrid>
+                </Section>
+            )}
+        </PageContainer>
     );
 };
 
 export default MyTrips;
+
+

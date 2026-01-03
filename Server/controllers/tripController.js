@@ -41,3 +41,29 @@ exports.getTrip = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+exports.updateTrip = async (req, res) => {
+    try {
+        const { status, coverPhoto, name, description, place, startDate, endDate } = req.body;
+        const trip = await Trip.findByPk(req.params.id);
+        
+        if (!trip) return res.status(404).json({ msg: 'Trip not found' });
+        if (trip.userId !== req.user.id) return res.status(401).json({ msg: 'Not authorized' });
+
+        // Update fields if provided
+        if (status) trip.status = status;
+        if (coverPhoto) trip.coverPhoto = coverPhoto;
+        if (name) trip.name = name;
+        if (description) trip.description = description;
+        if (place) trip.place = place;
+        if (startDate) trip.startDate = startDate;
+        if (endDate) trip.endDate = endDate;
+
+        await trip.save();
+        res.json(trip);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+

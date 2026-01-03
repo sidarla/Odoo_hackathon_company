@@ -2,123 +2,61 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
+import {
+    PageContainer,
+    Card,
+    Input,
+    SecondaryButton,
+    SectionTitle,
+    Badge
+} from '../components/SharedStyles';
 
-const Container = styled.div`
-    max-width: 1000px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background: #fff;
-    border-radius: 20px;
-    border: 1px solid #000;
-`;
-
-const Header = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 3px solid #ddd;
-    padding-bottom: 1rem;
-    margin-bottom: 2rem;
-`;
-
-const Title = styled.h2`
-    font-size: 1.5rem;
-`;
-
-const TopSection = styled.div`
+const ProfileHeader = styled(Card)`
     display: flex;
     gap: 3rem;
-    align-items: flex-start;
-    margin-bottom: 3rem;
-    border-bottom: 3px solid #ddd;
-    padding-bottom: 2rem;
+    align-items: center;
+    background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+    margin-bottom: 4rem;
+    padding: 3rem;
 
     @media (max-width: 768px) {
         flex-direction: column;
-        align-items: center;
+        text-align: center;
     }
 `;
 
 const ProfileImage = styled.div`
-    width: 150px;
-    height: 150px;
+    width: 180px;
+    height: 180px;
     border-radius: 50%;
-    border: 1px solid #000;
+    border: 5px solid white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    background: #f0f0f0;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
-    text-align: center;
-    flex-shrink: 0;
+    font-size: 3rem;
+    color: #ccc;
 `;
 
-const UserDetailsBox = styled.div`
+const UserInfo = styled.div`
     flex: 1;
-    border: 1px solid #000;
-    border-radius: 12px;
-    padding: 1.5rem;
-    position: relative;
-    min-height: 150px;
-`;
-
-const EditButton = styled.button`
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: transparent;
-    border: none;
-    color: var(--primary);
-    text-decoration: underline;
-    font-size: 0.9rem;
-`;
-
-const SectionTitle = styled.h3`
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
 `;
 
 const TripGrid = styled.div`
-    display: flex;
-    gap: 1.5rem;
-    overflow-x: auto;
-    padding-bottom: 1rem;
-    margin-bottom: 3rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
 `;
 
-const TripCard = styled.div`
-    min-width: 200px;
-    height: 250px;
-    border: 1px solid #000;
-    border-radius: 12px;
+const MiniTripCard = styled(Card)`
+    padding: 1.5rem;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    padding: 1rem;
-    background: #fff;
-`;
-
-const ViewButton = styled(Link)`
-    padding: 0.5rem 1rem;
-    border: 1px solid #000;
-    border-radius: 20px;
-    background: #fff;
-    text-align: center;
-    font-weight: bold;
-    margin-top: auto;
-    width: 100%;
-    
-    &:hover {
-        background: #f0f0f0;
-    }
-`;
-
-const Input = styled.input`
-    display: block;
-    width: 100%;
-    margin-bottom: 0.5rem;
-    padding: 0.3rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    justify-content: space-between;
+    min-height: 150px;
 `;
 
 const UserProfile = () => {
@@ -134,8 +72,8 @@ const UserProfile = () => {
                 setUser(userRes.data);
                 setEditForm(userRes.data);
 
-                const tripsRes = await api.get('/trips'); // Using existing trips route
-                setTrips(tripsRes.data);
+                const tripsRes = await api.get('/trips');
+                setTrips(tripsRes.data || []);
             } catch (err) {
                 console.error(err);
             }
@@ -154,72 +92,92 @@ const UserProfile = () => {
         }
     };
 
-    if (!user) return <Container>Loading...</Container>;
+    if (!user) return <PageContainer>Loading...</PageContainer>;
 
-    const preplannedTrips = trips.filter(t => t.status === 'upcoming' || t.status === 'ongoing');
-    const previousTrips = trips.filter(t => t.status === 'completed');
+    const upcoming = trips.filter(t => t.status === 'upcoming' || t.status === 'ongoing');
+    const past = trips.filter(t => t.status === 'completed');
 
     return (
-        <Container>
-            <Header>
-                <Title>GlobalTrotter</Title>
-            </Header>
-
-            <TopSection>
+        <PageContainer>
+            <ProfileHeader>
                 <ProfileImage>
-                    {user.profilePhoto ? <img src={user.profilePhoto} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '50%' }} /> : "Image of the User"}
+                    {user.profilePhoto ? (
+                        <img src={user.profilePhoto} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : '👤'}
                 </ProfileImage>
-                <UserDetailsBox>
-                    <EditButton onClick={() => isEditing ? handleUpdate() : setIsEditing(true)}>
-                        {isEditing ? 'Save' : 'Edit info'}
-                    </EditButton>
+                <UserInfo>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                        <div>
+                            {isEditing ? (
+                                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                                    <Input value={editForm.firstName || ''} onChange={e => setEditForm({ ...editForm, firstName: e.target.value })} placeholder="First Name" />
+                                    <Input value={editForm.lastName || ''} onChange={e => setEditForm({ ...editForm, lastName: e.target.value })} placeholder="Last Name" />
+                                </div>
+                            ) : (
+                                <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--dark)' }}>
+                                    {user.firstName} {user.lastName}
+                                </h1>
+                            )}
+                            <p style={{ color: '#888', fontWeight: '600' }}>@{user.username}</p>
+                        </div>
+                        <SecondaryButton onClick={() => isEditing ? handleUpdate() : setIsEditing(true)}>
+                            {isEditing ? 'Save Profile' : 'Edit Profile'}
+                        </SecondaryButton>
+                    </div>
 
                     {isEditing ? (
-                        <>
-                            <Input value={editForm.firstName || ''} onChange={e => setEditForm({ ...editForm, firstName: e.target.value })} placeholder="First Name" />
-                            <Input value={editForm.lastName || ''} onChange={e => setEditForm({ ...editForm, lastName: e.target.value })} placeholder="Last Name" />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <Input value={editForm.city || ''} onChange={e => setEditForm({ ...editForm, city: e.target.value })} placeholder="City" />
-                            <Input value={editForm.additionalInfo || ''} onChange={e => setEditForm({ ...editForm, additionalInfo: e.target.value })} placeholder="Additional Info" />
-                        </>
+                            <Input value={editForm.country || ''} onChange={e => setEditForm({ ...editForm, country: e.target.value })} placeholder="Country" />
+                            <Input value={editForm.additionalInfo || ''} onChange={e => setEditForm({ ...editForm, additionalInfo: e.target.value })} placeholder="About Me" />
+                        </div>
                     ) : (
-                        <>
-                            <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
-                            <p><strong>Username:</strong> {user.username}</p>
-                            <p><strong>Location:</strong> {user.city}, {user.country}</p>
-                            <p><strong>About:</strong> {user.additionalInfo || "User Details with appropriate option to edit those information..."}</p>
-                        </>
+                        <div style={{ marginTop: '1.5rem', color: '#666', lineHeight: '1.6' }}>
+                            <p>📍 {user.city}, {user.country}</p>
+                            <p style={{ marginTop: '0.5rem' }}>{user.additionalInfo || "No bio yet. Start by telling the community about your travel style!"}</p>
+                        </div>
                     )}
-                </UserDetailsBox>
-            </TopSection>
+                </UserInfo>
+            </ProfileHeader>
 
-            <SectionTitle>Preplanned Trips</SectionTitle>
+            <SectionTitle>My Adventures</SectionTitle>
             <TripGrid>
-                {preplannedTrips.length > 0 ? preplannedTrips.map(trip => (
-                    <TripCard key={trip.id}>
-                        <div style={{ flex: 1 }}>
-                            <h4>{trip.name}</h4>
-                            <p>{trip.startDate}</p>
+                {upcoming.length > 0 ? upcoming.map(trip => (
+                    <MiniTripCard key={trip.id}>
+                        <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                <Badge type={trip.status}>{trip.status}</Badge>
+                                <span style={{ fontSize: '0.8rem', color: '#aaa' }}>{new Date(trip.startDate).toLocaleDateString()}</span>
+                            </div>
+                            <h4 style={{ fontSize: '1.2rem', color: 'var(--dark)' }}>{trip.name}</h4>
                         </div>
-                        <ViewButton to={`/itinerary/${trip.id}`}>View</ViewButton>
-                    </TripCard>
-                )) : <p>No upcoming trips.</p>}
+                        <Link to={`/itinerary/${trip.id}/view`} style={{ textDecoration: 'none', marginTop: '1.5rem' }}>
+                            <SecondaryButton style={{ width: '100%', padding: '0.6rem' }}>View Plan</SecondaryButton>
+                        </Link>
+                    </MiniTripCard>
+                )) : <p style={{ color: '#aaa' }}>No upcoming trips.</p>}
             </TripGrid>
 
-            <SectionTitle>Previous Trips</SectionTitle>
+            <SectionTitle>Past Memories</SectionTitle>
             <TripGrid>
-                {previousTrips.length > 0 ? previousTrips.map(trip => (
-                    <TripCard key={trip.id}>
-                        <div style={{ flex: 1 }}>
-                            <h4>{trip.name}</h4>
-                            <p>Ended: {trip.endDate}</p>
+                {past.length > 0 ? past.map(trip => (
+                    <MiniTripCard key={trip.id}>
+                        <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                <Badge type="completed">completed</Badge>
+                                <span style={{ fontSize: '0.8rem', color: '#aaa' }}>{new Date(trip.endDate).toLocaleDateString()}</span>
+                            </div>
+                            <h4 style={{ fontSize: '1.2rem', color: 'var(--dark)' }}>{trip.name}</h4>
                         </div>
-                        <ViewButton to={`/itinerary/${trip.id}`}>View</ViewButton>
-                    </TripCard>
-                )) : <p>No completed trips.</p>}
+                        <Link to={`/itinerary/${trip.id}/view`} style={{ textDecoration: 'none', marginTop: '1.5rem' }}>
+                            <SecondaryButton style={{ width: '100%', padding: '0.6rem' }}>View Itinerary</SecondaryButton>
+                        </Link>
+                    </MiniTripCard>
+                )) : <p style={{ color: '#aaa' }}>No completed trips yet.</p>}
             </TripGrid>
-
-        </Container>
+        </PageContainer>
     );
 };
 
 export default UserProfile;
+

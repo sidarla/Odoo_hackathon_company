@@ -1,91 +1,93 @@
 import React from 'react';
 import styled from 'styled-components';
+import {
+    PageContainer,
+    Card,
+    SectionTitle,
+    Input,
+    SecondaryButton
+} from '../components/SharedStyles';
 
-const Container = styled.div`
-    max-width: 1000px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background: #fff;
-    border-radius: 20px;
-    border: 1px solid #000;
-`;
-
-const Header = styled.div`
+const AdminHeader = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    border-bottom: 2px solid #000;
-    padding-bottom: 1rem;
+    margin-bottom: 3rem;
 `;
 
-const Title = styled.h2`
-    font-size: 1.5rem;
+const StatsGrid = styled.div`
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
 `;
 
-const SearchBarContainer = styled.div`
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
+const StatCard = styled(Card)`
+    text-align: center;
+    padding: 1.5rem;
+    border-top: 4px solid var(--secondary);
 `;
 
-const SearchInput = styled.input`
-    flex: 1;
-    padding: 0.8rem;
-    border: 1px solid #000;
-    border-radius: 8px;
-    font-size: 1rem;
+const StatValue = styled.div`
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--dark);
 `;
 
-const FilterButton = styled.button`
-    padding: 0.8rem 1.5rem;
-    background: #fff;
-    border: 1px solid #000;
-    border-radius: 8px;
-    cursor: pointer;
-    &:hover { background: #f9f9f9; }
+const StatLabel = styled.div`
+    font-size: 0.9rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 0.5rem;
 `;
 
-const TabsContainer = styled.div`
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    overflow-x: auto;
-`;
+const DashboardLayout = styled.div`
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
 
-const TabButton = styled.button`
-    padding: 0.8rem 1.5rem;
-    background: #fff;
-    border: 1px solid #000;
-    border-radius: 20px;
-    white-space: nowrap;
-    cursor: pointer;
-    font-weight: 500;
-    
-    &:hover, &.active {
-        background: #f0f0f0;
-        font-weight: bold;
+    @media (max-width: 900px) {
+        grid-template-columns: 1fr;
     }
 `;
 
-const DashboardBoard = styled.div`
-    background: #f0f0f0;
-    border-radius: 30px;
-    padding: 2rem;
-    min-height: 600px;
-    display: flex;
-    flex-direction: column;
-    gap: 3rem;
+const AnalyticsCard = styled(Card)`
+    background: #fff;
 `;
 
-// Simple CSS shapes to mimic charts without a library
-const ChartRow = styled.div`
+const ChartContainer = styled.div`
+    height: 300px;
+    width: 100%;
+    margin-top: 2rem;
     display: flex;
+    align-items: flex-end;
     justify-content: space-around;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid #f0f0f0;
+    position: relative;
+`;
+
+const Bar = styled.div`
+    width: 40px;
+    background: linear-gradient(to top, var(--secondary), #8efce5);
+    border-radius: 8px 8px 0 0;
+    height: ${props => props.height || '0%'};
+    position: relative;
+    transition: all 0.5s ease;
+
+    &:hover {
+        filter: brightness(1.1);
+        &::after {
+            content: '${props => props.value}';
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: var(--dark);
+        }
+    }
 `;
 
 const PieChart = styled.div`
@@ -93,131 +95,117 @@ const PieChart = styled.div`
     height: 200px;
     border-radius: 50%;
     background: conic-gradient(
-        #4caf50 0% 25%, 
-        #2196f3 25% 60%, 
-        #ff9800 60% 100%
+        var(--primary) 0% 35%, 
+        var(--secondary) 35% 70%, 
+        var(--accent) 70% 100%
     );
-    position: relative;
-    border: 2px solid #fff;
+    margin: 2rem auto;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 `;
 
-const ListMock = styled.div`
+const Legend = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.8rem;
+    margin-top: 2rem;
 `;
 
-const ListItem = styled.div`
-    width: 200px;
-    height: 20px;
-    background: #bbb;
-    border-radius: 4px;
-`;
-
-const LineChartMock = styled.div`
-    width: 100%;
-    height: 150px;
-    border-left: 2px solid #999;
-    border-bottom: 2px solid #999;
-    position: relative;
+const LegendItem = styled.div`
     display: flex;
-    align-items: flex-end;
-    justify-content: space-around;
-    padding-bottom: 5px;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #666;
 
-    &::after {
+    &::before {
         content: '';
-        position: absolute;
-        top: 50%;
-        left: 10%;
-        right: 10%;
-        height: 2px;
-        background: #d32f2f;
-        transform: rotate(-10deg); /* Crude line simulation */
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        background: ${props => props.color};
     }
-`;
-
-const Dot = styled.div`
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    background: #d32f2f;
-    z-index: 1;
-`;
-
-const BarChartMock = styled.div`
-    display: flex;
-    align-items: flex-end;
-    gap: 1rem;
-    height: 150px;
-`;
-
-const Bar = styled.div`
-    width: 40px;
-    background: #ffab91;
-    border-radius: 4px 4px 0 0;
 `;
 
 const AdminPanel = () => {
     return (
-        <Container>
-            <Header>
-                <Title>GlobalTrotter</Title>
-                <div style={{ width: '30px', height: '30px', borderRadius: '50%', border: '1px solid #000' }}></div>
-            </Header>
+        <PageContainer>
+            <AdminHeader>
+                <SectionTitle>Admin Insights</SectionTitle>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <Input placeholder="Search metrics..." style={{ width: '250px' }} />
+                    <SecondaryButton>Export data</SecondaryButton>
+                </div>
+            </AdminHeader>
 
-            <SearchBarContainer>
-                <SearchInput placeholder="Search bar ......" />
-                <FilterButton>Group by</FilterButton>
-                <FilterButton>Filter</FilterButton>
-                <FilterButton>Sort by...</FilterButton>
-            </SearchBarContainer>
+            <StatsGrid>
+                <StatCard>
+                    <StatValue>1,284</StatValue>
+                    <StatLabel>Total Users</StatLabel>
+                </StatCard>
+                <StatCard style={{ borderTopColor: 'var(--primary)' }}>
+                    <StatValue>3,592</StatValue>
+                    <StatLabel>Trips Created</StatLabel>
+                </StatCard>
+                <StatCard style={{ borderTopColor: 'var(--accent)' }}>
+                    <StatValue>8.4k</StatValue>
+                    <StatLabel>Daily Visits</StatLabel>
+                </StatCard>
+                <StatCard>
+                    <StatValue>$42k</StatValue>
+                    <StatLabel>Est. Savings</StatLabel>
+                </StatCard>
+            </StatsGrid>
 
-            <TabsContainer>
-                <TabButton>Manage Users</TabButton>
-                <TabButton>Popular cities</TabButton>
-                <TabButton>Popular Activites</TabButton>
-                <TabButton className="active">User Trends and Analytics</TabButton>
-            </TabsContainer>
+            <DashboardLayout>
+                <AnalyticsCard>
+                    <h3>Trip Creation Trends (Weekly)</h3>
+                    <ChartContainer>
+                        <Bar height="40%" value="120" />
+                        <Bar height="65%" value="195" />
+                        <Bar height="50%" value="150" />
+                        <Bar height="85%" value="255" />
+                        <Bar height="70%" value="210" />
+                        <Bar height="95%" value="285" />
+                        <Bar height="80%" value="240" />
+                    </ChartContainer>
+                    <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '1rem', color: '#888', fontSize: '0.8rem' }}>
+                        <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
+                    </div>
+                </AnalyticsCard>
 
-            <DashboardBoard>
-                <ChartRow>
-                    <ListMock>
-                        <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#777' }}></div>
-                        <ListItem />
-                        <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#777' }}></div>
-                        <ListItem />
-                    </ListMock>
+                <AnalyticsCard>
+                    <h3>Demographics</h3>
                     <PieChart />
-                </ChartRow>
+                    <Legend>
+                        <LegendItem color="var(--primary)">Europe (35%)</LegendItem>
+                        <LegendItem color="var(--secondary)">Asia (35%)</LegendItem>
+                        <LegendItem color="var(--accent)">Americas (30%)</LegendItem>
+                    </Legend>
+                </AnalyticsCard>
+            </DashboardLayout>
 
-                <ChartRow>
-                    <LineChartMock>
-                        <Dot style={{ marginBottom: '20px' }} />
-                        <Dot style={{ marginBottom: '40px' }} />
-                        <Dot style={{ marginBottom: '30px' }} />
-                        <Dot style={{ marginBottom: '60px' }} />
-                        <Dot style={{ marginBottom: '50px' }} />
-                    </LineChartMock>
-                </ChartRow>
-
-                <ChartRow style={{ alignItems: 'flex-end' }}>
-                    <BarChartMock>
-                        <Bar style={{ height: '60%' }} />
-                        <Bar style={{ height: '80%' }} />
-                        <Bar style={{ height: '100%' }} />
-                    </BarChartMock>
-
-                    <ListMock>
-                        <ListItem style={{ background: '#777', width: '250px', height: '30px' }} />
-                        <ListItem style={{ width: '250px' }} />
-                        <ListItem style={{ width: '250px' }} />
-                        <ListItem style={{ width: '250px' }} />
-                    </ListMock>
-                </ChartRow>
-            </DashboardBoard>
-        </Container>
+            <Card style={{ marginTop: '2rem' }}>
+                <h3 style={{ marginBottom: '1.5rem' }}>Popular Destinations</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {[
+                        { city: 'Paris, France', count: 450, growth: '+12%' },
+                        { city: 'Tokyo, Japan', count: 380, growth: '+25%' },
+                        { city: 'New York, USA', count: 310, growth: '-5%' },
+                        { city: 'Bali, Indonesia', count: 290, growth: '+18%' }
+                    ].map((item, i) => (
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: '#f8f9fa', borderRadius: '10px' }}>
+                            <span style={{ fontWeight: '700' }}>{item.city}</span>
+                            <div style={{ display: 'flex', gap: '2rem', fontSize: '0.9rem' }}>
+                                <span style={{ color: '#666' }}>{item.count} trips</span>
+                                <span style={{ color: item.growth.startsWith('+') ? '#2dbba7' : '#ff6b6b', fontWeight: 'bold' }}>{item.growth}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Card>
+        </PageContainer>
     );
 };
 
 export default AdminPanel;
+
